@@ -13,14 +13,14 @@ M.make_request = function()
     }
 
     local body = {
-        model = provider_config.default_model,
+        model = provider_config.model,
         messages = state.conversation,
         temperature = 0.7,
         stream = true,
+        max_tokens = provider_config.max_tokens,
     }
 
     local answer = ""
-    vim.api.nvim_set_option_value("modifiable", true, { buf = state.buffer })
 
     Curl.post(provider_config.url .. provider_config.chat_url, {
         headers = headers,
@@ -31,16 +31,21 @@ M.make_request = function()
                     local data = line:gsub("^data: ", "")
                     if data == "[DONE]" then
                         state.add_assistant_message(answer)
-                        state.set_state("user_input")
+                        state.set_state(state.state_enum.USER_INPUT)
+                        buffer.print_stream("\n", state.buffer)
                         buffer.add_user_header()
                         return
                     end
                     local ok, decoded = pcall(vim.json.decode, data)
                     if ok and decoded.choices and decoded.choices[1].delta.content then
+                        if state.state ~= state.state_enum.RESPONSE then
+                            state.set_state(state.state_enum.RESPONSE)
+                            buffer.print_stream("\n", state.buffer)
+                        end
                         local text = decoded.choices[1].delta.content
                         if text then
                             answer = answer .. text
-                            buffer.print_stream(text)
+                            buffer.print_stream(text, state.buffer)
                         end
                     end
                 end

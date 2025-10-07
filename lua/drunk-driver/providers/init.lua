@@ -5,6 +5,7 @@ local M = {}
 local providers = {
     moonshot = require("drunk-driver.providers.moonshot"),
     openai = require("drunk-driver.providers.openai"),
+    anthropic = require("drunk-driver.providers.anthropic"),
 }
 
 M.get_current_provider = function()

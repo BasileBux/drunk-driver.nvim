@@ -2,9 +2,24 @@ local config = require("drunk-driver.config")
 
 local M = {}
 
+-- No type safety on this enum so only use this to set state
+M.state_enum = {
+    USER_INPUT = 0,
+    AWAITING_RESPONSE = 1,
+    THINKING = 2,
+    RESPONSE = 3,
+}
+
 M.buffer = 0
-M.state = "user_input"
+M.state = M.state_enum.USER_INPUT
 M.conversation = {}
+
+M.thinking = {
+    buffer = nil,
+    window = -1,
+    current_thought = -1,
+    data = {},
+}
 
 M.init = function()
     M.conversation = {

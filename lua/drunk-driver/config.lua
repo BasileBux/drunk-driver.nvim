@@ -6,10 +6,15 @@ M.providers = {
         url = "https://api.moonshot.ai",
         chat_url = "/v1/chat/completions",
         models_endpoint = "/v1/models",
-        default_model = "kimi-k2-0905-preview",
+        model = "kimi-k2-0905-preview",
         roles = {
             llm = "assistant",
             user = "user",
+        },
+        max_tokens = 10000,
+        thinking = {
+            enabled = true,
+            budget = 2000,
         },
     },
     openai = {
@@ -17,15 +22,50 @@ M.providers = {
         url = "https://api.openai.com",
         chat_url = "/v1/responses",
         models_endpoint = "/v1/models",
-        default_model = "gpt-5",
+        -- model = "gpt-5",
+        model = "gpt-5-mini-2025-08-07",
         roles = {
             llm = "assistant",
             user = "user",
         },
+        max_tokens = 10000,
+        thinking = {
+            enabled = true,
+            budget = 2000,
+        },
+    },
+    anthropic = {
+        api_key_name = "ANTHROPIC_API_KEY",
+        url = "https://api.anthropic.com",
+        chat_url = "/v1/messages",
+        models_endpoint = "/v1/models",
+        model = "claude-sonnet-4-20250514",
+        roles = {
+            llm = "assistant",
+            user = "user",
+        },
+        max_tokens = 10000,
+        thinking = {
+            enabled = true,
+            budget = 2000,
+        },
     },
 }
 
+M.display_names = {
+    user = "# Me",
+    llm = "# Drunk Driver",
+}
+
+M.thinking = {
+    marker = "> [Thinking]",
+    marker_regex = "> %[Thinking%]",
+}
+
+M.log_file = io.open(vim.fn.stdpath("log") .. "/drunk-driver.log", "a")
+
 M.system_prompt = "You are an AI assistant in neovim called Drunk Driver."
+
 M.current_provider = "moonshot"
 
 M.setup = function(opts)
