@@ -63,7 +63,7 @@ end
 M.new = function()
     local index = #state.thinking.data + 1
     state.thinking.data[index] = ""
-    buffer.add_thinking_marker(index)
+    buffer.add_thinking_marker_scheduled(index, state.buffer)
     return index
 end
 

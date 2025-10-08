@@ -1,4 +1,5 @@
 local config = require("drunk-driver.config")
+local buffer = require("drunk-driver.buffer")
 
 local M = {}
 
@@ -28,6 +29,20 @@ M.init = function()
             content = config.system_prompt,
         },
     }
+end
+
+M.create_buffer = function()
+    local buf = vim.api.nvim_create_buf(false, true)
+    M.set_buffer(buf)
+    M.init()
+    vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+    vim.api.nvim_set_option_value("filetype", "drunkdriver", { buf = buf })
+    vim.api.nvim_buf_set_name(buf, "drunkdriver")
+    vim.api.nvim_buf_set_lines(buf, 0, 0, false, { "# Me", "" })
+    vim.api.nvim_set_current_buf(buf)
+    vim.api.nvim_win_set_cursor(0, { 3, 0 })
+    vim.api.nvim_set_option_value("wrap", true, { win = 0 })
+    return buf
 end
 
 M.add_user_message = function(content)
@@ -94,6 +109,118 @@ M.save_state = function(filename)
         config.log_file:write(string.format("Saved conversation to %s\n", filepath))
     else
         config.log_file:write(string.format("Failed to save conversation to %s\n", filepath))
+    end
+end
+
+M.load_conversation = function()
+    if vim.bo.filetype ~= "drunkdriver" then
+        vim.notify("This command can only be used in drunkdriver", vim.log.levels.ERROR)
+        return
+    end
+
+    local save_dir = vim.fn.getcwd() .. "/" .. config.save_directory_name
+    if vim.fn.isdirectory(save_dir) == 0 then
+        vim.notify("No codecompanion directory found", vim.log.levels.ERROR)
+        return
+    end
+
+    local files = vim.fn.globpath(save_dir, "*.json", false, true)
+    if #files == 0 then
+        vim.notify("No saved chats found", vim.log.levels.ERROR)
+        return
+    end
+
+    local file_info = {}
+    for _, file in ipairs(files) do
+        local filename = vim.fn.fnamemodify(file, ":t")
+        -- Extract date and title
+        local date_str, title = filename:match("^(%d+%-%d+%-%d+)%-(.+)%.json$")
+        if date_str and title then
+            table.insert(file_info, {
+                filename = filename,
+                date_str = date_str,
+                title = title:gsub("-", "("),
+                full_path = file,
+            })
+        end
+    end
+
+    table.sort(file_info, function(a, b)
+        return a.date_str > b.date_str
+    end)
+
+    local formatted_items = {}
+    local file_lookup = {}
+    for _, info in ipairs(file_info) do
+        local display_text = string.format(
+            "%s - %s",
+            os.date("%d/%m/%y", tonumber(info.date_str:match("(%d%d)(%d%d)(%d%d)"))),
+            info.title
+        )
+        table.insert(formatted_items, display_text)
+        file_lookup[display_text] = info.full_path
+    end
+
+    vim.ui.select(formatted_items, {
+        prompt = "Select chat to load:",
+        format_item = function(item)
+            return item
+        end,
+    }, function(choice)
+        if choice then
+            local filepath = file_lookup[choice]
+            M.load_state(filepath)
+        end
+    end)
+end
+
+M.load_state = function(filepath)
+    local file = io.open(filepath, "r")
+    if not file then
+        config.log_file:write("Dd: Failed to load conversation from " .. filepath, vim.log.levels.ERROR)
+        return
+    end
+    local content = file:read("*a")
+    file:close()
+    local ok, data = pcall(vim.fn.json_decode, content)
+    if not ok then
+        config.log_file:write("Dd: Failed to parse conversation from " .. filepath, vim.log.levels.ERROR)
+        return
+    end
+    if data.messages then
+        M.conversation = {}
+        table.insert(M.conversation, {
+            role = "system",
+            content = config.system_prompt,
+        })
+        for _, msg in ipairs(data.messages) do
+            table.insert(M.conversation, msg)
+        end
+    end
+    if data.thinking then
+        M.thinking.data = {}
+        M.thinking.data = data.thinking
+    end
+
+    if M.buffer and vim.api.nvim_buf_is_valid(M.buffer) then
+        vim.api.nvim_buf_set_lines(M.buffer, 0, -1, false, { config.display_names.user, "", "" })
+        for i, msg in ipairs(M.conversation) do
+            if i ~= 2 and msg.role == "user" then
+                buffer.print_stream("\n", M.buffer)
+                buffer.add_user_header(M.buffer)
+            elseif msg.role == "assistant" then
+                buffer.add_assistant_header(M.buffer)
+                vim.api.nvim_set_option_value("modifiable", true, { buf = M.buffer })
+                buffer.print_stream("\n", M.buffer)
+            elseif msg.role == "system" then
+                goto continue -- We have continue at home
+            end
+            buffer.print_stream(msg.content, M.buffer)
+            vim.api.nvim_set_option_value("modifiable", true, { buf = M.buffer })
+            ::continue::
+        end
+        buffer.print_stream("\n", M.buffer)
+        buffer.add_user_header(M.buffer)
     end
 end
 

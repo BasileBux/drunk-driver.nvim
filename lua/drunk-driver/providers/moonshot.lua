@@ -32,20 +32,20 @@ M.make_request = function()
                     if data == "[DONE]" then
                         state.add_assistant_message(answer)
                         state.set_state(state.state_enum.USER_INPUT)
-                        buffer.print_stream("\n", state.buffer)
-                        buffer.add_user_header()
+                        buffer.print_stream_scheduled("\n", state.buffer)
+                        buffer.add_user_header_scheduled(state.buffer)
                         return
                     end
                     local ok, decoded = pcall(vim.json.decode, data)
                     if ok and decoded.choices and decoded.choices[1].delta.content then
                         if state.state ~= state.state_enum.RESPONSE then
                             state.set_state(state.state_enum.RESPONSE)
-                            buffer.print_stream("\n", state.buffer)
+                            buffer.print_stream_scheduled("\n", state.buffer)
                         end
                         local text = decoded.choices[1].delta.content
                         if text then
                             answer = answer .. text
-                            buffer.print_stream(text, state.buffer)
+                            buffer.print_stream_scheduled(text, state.buffer)
                         end
                     end
                 end

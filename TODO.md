@@ -6,9 +6,7 @@
 - [x] Parse last prompt and format history list for new prompt 
 - [x] Refactor to use multiple files
 - [x] Add thinking models support
-- [ ] Add chat saving / loading
-    - [X] Saving
-    - [ ] Loading
+- [x] Add chat saving / loading
 - [ ] Add provider and model selection
 - [ ] Write system prompt
 - [ ] Add simple tool calling (ls, tree, etc...)

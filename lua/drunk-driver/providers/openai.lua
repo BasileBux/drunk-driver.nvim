@@ -30,8 +30,8 @@ M.make_request = function()
                     if line:match("event: response.completed") then
                         state.add_assistant_message(answer)
                         state.set_state(state.state_enum.USER_INPUT)
-                        buffer.print_stream("\n", state.buffer)
-                        buffer.add_user_header()
+                        buffer.print_stream_scheduled("\n", state.buffer)
+                        buffer.add_user_header_scheduled(state.buffer)
                         return
                     end
                     if line:gmatch("^data:") then
@@ -40,12 +40,12 @@ M.make_request = function()
                         if ok and decoded.delta then
                             if state.state ~= state.state_enum.RESPONSE then
                                 state.set_state(state.state_enum.RESPONSE)
-                                buffer.print_stream("\n", state.buffer)
+                                buffer.print_stream_scheduled("\n", state.buffer)
                             end
                             local text = decoded.delta
                             if text then
                                 answer = answer .. text
-                                buffer.print_stream(text, state.buffer)
+                                buffer.print_stream_scheduled(text, state.buffer)
                             end
                         end
                     end

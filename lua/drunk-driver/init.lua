@@ -7,7 +7,7 @@ local thinking = require("drunk-driver.thinking")
 local M = {}
 
 M.send_request = function()
-    local prompt = buffer.parse_prompt()
+    local prompt = buffer.parse_prompt(state.buffer)
     if #prompt == 0 then
         print("Buffer is empty. Please enter a prompt.")
         return
@@ -16,7 +16,7 @@ M.send_request = function()
     state.add_user_message(prompt)
     state.set_state(state.state_enum.AWAITING_RESPONSE)
 
-    buffer.add_assistant_header()
+    buffer.add_assistant_header(state.buffer)
 
     local provider = providers.get_current_provider()
     provider.make_request()
@@ -24,20 +24,22 @@ end
 
 M.hover_thinking = thinking.open
 M.save_conversation = state.save_conversation
+M.load_conversation = state.load_conversation
 
 M.new_chat = function()
-    local buf = buffer.create_buffer()
+    local buf = state.create_buffer()
     buffer.setup_keymaps(buf, M.send_request, M.hover_thinking)
     thinking.setup()
     return buf
 end
 
-local subcommands = { "new", "show_thinking", "save" }
+local subcommands = { "new", "show_thinking", "save", "load" }
 
 local handlers = {
     new = M.new_chat,
     show_thinking = M.hover_thinking,
     save = M.save_conversation,
+    load = M.load_conversation,
 }
 
 M.dd = function(opts)
