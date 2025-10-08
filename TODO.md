@@ -7,6 +7,9 @@
 - [x] Refactor to use multiple files
 - [x] Add thinking models support
 - [ ] Add chat saving / loading
+    - [X] Saving
+    - [ ] Loading
+- [ ] Add provider and model selection
 - [ ] Write system prompt
 - [ ] Add simple tool calling (ls, tree, etc...)
 - [ ] Add possiblility to provide files to the model

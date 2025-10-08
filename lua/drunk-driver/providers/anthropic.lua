@@ -16,7 +16,7 @@ M.make_request = function()
 
     -- Anthropic doesn't accept system messages in input. It takes it in the system
     -- part of the body.
-    local messages = state.conversation
+    local messages = vim.deepcopy(state.conversation)
     local system_message = nil
     if messages[1] and messages[1].role == "system" then
         system_message = {
@@ -29,13 +29,15 @@ M.make_request = function()
         model = provider_config.model,
         max_tokens = provider_config.max_tokens,
         system = { system_message },
-        messages = state.conversation,
-        thinking = {
-            type = provider_config.thinking.enabled and "enabled" or "disabled",
-            budget_tokens = provider_config.thinking.budget,
-        },
+        messages = messages,
         stream = true,
     }
+    if provider_config.thinking.enabled then
+        body.thinking = {
+            type = "enabled",
+            budget_tokens = provider_config.thinking.budget,
+        }
+    end
 
     local answer = ""
     local thinking_index = 0
@@ -53,6 +55,7 @@ M.make_request = function()
                         buffer.add_user_header()
                         return
                     end
+
                     if line:gmatch("^data:") then
                         local data = line:gsub("^data: ", "")
                         local ok, decoded = pcall(vim.json.decode, data)
@@ -61,6 +64,7 @@ M.make_request = function()
                                 if state.state ~= state.state_enum.THINKING then
                                     state.set_state(state.state_enum.THINKING)
                                     thinking_index = thinking.new()
+                                    answer = answer .. config.thinking.marker .. " " .. thinking_index .. "\n\n"
                                 end
                                 local text = decoded.delta.thinking
                                 state.thinking.data[thinking_index] = state.thinking.data[thinking_index] .. text

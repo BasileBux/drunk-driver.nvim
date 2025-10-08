@@ -23,6 +23,7 @@ M.send_request = function()
 end
 
 M.hover_thinking = thinking.open
+M.save_conversation = state.save_conversation
 
 M.new_chat = function()
     local buf = buffer.create_buffer()
@@ -31,11 +32,12 @@ M.new_chat = function()
     return buf
 end
 
-local subcommands = { "new", "show_thinking" }
+local subcommands = { "new", "show_thinking", "save" }
 
 local handlers = {
     new = M.new_chat,
     show_thinking = M.hover_thinking,
+    save = M.save_conversation,
 }
 
 M.dd = function(opts)

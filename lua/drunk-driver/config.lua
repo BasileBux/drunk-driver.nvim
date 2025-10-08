@@ -66,7 +66,10 @@ M.log_file = io.open(vim.fn.stdpath("log") .. "/drunk-driver.log", "a")
 
 M.system_prompt = "You are an AI assistant in neovim called Drunk Driver."
 
-M.current_provider = "moonshot"
+-- M.current_provider = "moonshot"
+M.current_provider = "anthropic"
+
+M.save_directory_name = ".drunk-driver"
 
 M.setup = function(opts)
     if opts.provider then
