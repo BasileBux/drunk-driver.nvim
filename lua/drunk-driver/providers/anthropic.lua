@@ -6,13 +6,17 @@ local thinking = require("drunk-driver.thinking")
 
 local M = {}
 
-M.make_request = function()
-    local provider_config = config.providers.anthropic
-    local headers = {
-        ["Content-Type"] = "application/json",
+M.get_headers = function(provider_config)
+    return {
         ["x-api-key"] = os.getenv(provider_config.api_key_name),
         ["anthropic-version"] = "2023-06-01",
     }
+end
+
+M.make_request = function()
+    local provider_config = config.providers.anthropic
+    local headers = M.get_headers(provider_config)
+    headers["Content-Type"] = "application/json"
 
     -- Anthropic doesn't accept system messages in input. It takes it in the system
     -- part of the body.

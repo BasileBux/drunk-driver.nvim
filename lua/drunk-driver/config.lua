@@ -50,6 +50,22 @@ M.providers = {
             budget = 2000,
         },
     },
+    copilot = {
+        api_key_name = "COPILOT_API_KEY", -- WARNING: auth might be more complex than just an API
+        url = "https://api.githubcopilot.com",
+        chat_url = "chat/completions",
+        models_endpoint = "/models",
+        model = "claude-sonnet-4",
+        roles = {
+            llm = "assistant",
+            user = "user",
+        },
+        max_tokens = 10000,
+        thinking = { -- WARNING: not sure to even have the choice
+            enabled = false,
+            budget = 2000,
+        },
+    },
 }
 
 M.display_names = {
@@ -66,8 +82,8 @@ M.log_file = io.open(vim.fn.stdpath("log") .. "/drunk-driver.log", "a")
 
 M.system_prompt = "You are an AI assistant in neovim called Drunk Driver."
 
--- M.current_provider = "moonshot"
-M.current_provider = "anthropic"
+M.current_provider = "moonshot"
+-- M.current_provider = "openai"
 
 M.save_directory_name = ".drunk-driver"
 

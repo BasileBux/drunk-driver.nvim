@@ -33,13 +33,15 @@ M.new_chat = function()
     return buf
 end
 
-local subcommands = { "new", "show_thinking", "save", "load" }
+local subcommands = { "new", "show_thinking", "save", "load", "select_model", "test" }
 
 local handlers = {
     new = M.new_chat,
     show_thinking = M.hover_thinking,
     save = M.save_conversation,
     load = M.load_conversation,
+    select_model = providers.change_model,
+    test = providers.get_provider("copilot").test
 }
 
 M.dd = function(opts)

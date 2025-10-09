@@ -5,17 +5,21 @@ local buffer = require("drunk-driver.buffer")
 
 local M = {}
 
-M.make_request = function()
-    local provider_config = config.providers.moonshot
-    local headers = {
-        ["Content-Type"] = "application/json",
+M.get_headers = function(provider_config)
+    return {
         Authorization = "Bearer " .. os.getenv(provider_config.api_key_name),
     }
+end
+
+M.make_request = function()
+    local provider_config = config.providers.moonshot
+    local headers = M.get_headers(provider_config)
+    headers["Content-Type"] = "application/json"
 
     local body = {
         model = provider_config.model,
         messages = state.conversation,
-        temperature = 0.7,
+        -- temperature = 0.7,
         stream = true,
         max_tokens = provider_config.max_tokens,
     }
