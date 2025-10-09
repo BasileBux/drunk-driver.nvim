@@ -8,9 +8,9 @@ M.make_request = function()
     openai_compatible.make_request(provider_config)
 end
 
--- Reference: https://github.com/olimorris/codecompanion.nvim/blob/1ac1adb7f72798621cc9931ddf0a341ab486d7d8/lua/codecompanion/adapters/http/copilot/token.lua
-
--- Function fully copied from: https://github.com/olimorris/codecompanion.nvim/blob/1ac1adb7f72798621cc9931ddf0a341ab486d7d8/lua/codecompanion/adapters/http/copilot/token.lua#L51-L65
+-- Cpilot api isn't documented anywhere and the best ways to learn is to look at
+-- other implementations. I got all my knowledge and code from the following file:
+-- https://github.com/olimorris/codecompanion.nvim/blob/1ac1adb7f72798621cc9931ddf0a341ab486d7d8/lua/codecompanion/adapters/http/copilot/token.lua
 local get_config_path = function()
     local path = vim.fs.normalize("$XDG_CONFIG_HOME")
 

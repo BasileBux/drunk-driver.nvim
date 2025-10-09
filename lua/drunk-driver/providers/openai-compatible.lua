@@ -1,18 +1,19 @@
 local Curl = require("plenary.curl")
 local state = require("drunk-driver.state")
 local buffer = require("drunk-driver.buffer")
-local config = require("drunk-driver.config")
 
 local M = {}
 
 M.make_request = function(provider_config)
     local headers = provider_config.headers_function(provider_config)
+    if headers == nil then -- This should never happen here but whatever
+        return {}
+    end
     headers["Content-Type"] = "application/json"
 
     local body = {
         model = provider_config.model,
         messages = state.conversation,
-        -- temperature = 0.7,
         stream = true,
         max_tokens = provider_config.max_tokens,
     }

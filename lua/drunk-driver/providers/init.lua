@@ -42,9 +42,11 @@ M.select_provider = function(callback)
 end
 
 M.list_models = function(provider_name)
-    local provider = M.get_provider(provider_name)
     local provider_config = config.providers[provider_name]
-    local headers = provider.get_headers(provider_config)
+    local headers = provider_config.headers_function(provider_config)
+    if headers == nil then
+        return {}
+    end
 
     local models = Curl.get(provider_config.url .. provider_config.models_endpoint, {
         headers = headers,

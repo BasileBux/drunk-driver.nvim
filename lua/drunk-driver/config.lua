@@ -15,6 +15,10 @@ end
 
 local copilot_get_headers = function(provider_config)
     local version = vim.version()
+    if not provider_config.token then
+        print("error: copilot token not found. Try launching a new drunk-driver session")
+        return nil
+    end
     return {
         Authorization = "Bearer " .. provider_config.token,
         ["Content-Type"] = "application/json",
