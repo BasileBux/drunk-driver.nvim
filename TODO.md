@@ -8,7 +8,8 @@
 - [x] Add thinking models support
 - [x] Add chat saving / loading
 - [x] Add provider and model selection
-- [ ] Add copilot provider
+- [x] Add copilot provider
+- [ ] Add better error reporting to the user without crashing or being anoying
 - [ ] Write system prompt
 - [ ] Add simple tool calling (ls, tree, etc...)
 - [ ] Add possiblility to provide files to the model

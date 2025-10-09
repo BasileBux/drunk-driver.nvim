@@ -17,8 +17,12 @@ M.send_request = function()
     state.set_state(state.state_enum.AWAITING_RESPONSE)
 
     buffer.add_assistant_header(state.buffer)
-
     local provider = providers.get_current_provider()
+
+    if provider == providers.get_provider("copilot") then
+        provider.validate_token()
+    end
+
     provider.make_request()
 end
 
@@ -27,8 +31,10 @@ M.save_conversation = state.save_conversation
 M.load_conversation = state.load_conversation
 
 M.new_chat = function()
+    config.log_file:write("\n\nStarting new chat\n")
     local buf = state.create_buffer()
     buffer.setup_keymaps(buf, M.send_request, M.hover_thinking)
+    providers.get_current_provider().init()
     thinking.setup()
     return buf
 end
@@ -41,7 +47,7 @@ local handlers = {
     save = M.save_conversation,
     load = M.load_conversation,
     select_model = providers.change_model,
-    test = providers.get_provider("copilot").test
+    test = providers.get_provider("copilot").init
 }
 
 M.dd = function(opts)

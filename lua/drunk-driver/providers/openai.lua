@@ -5,15 +5,9 @@ local buffer = require("drunk-driver.buffer")
 
 local M = {}
 
-M.get_headers = function(provider_config)
-    return {
-        Authorization = "Bearer " .. os.getenv(provider_config.api_key_name),
-    }
-end
-
 M.make_request = function()
     local provider_config = config.providers.openai
-    local headers = M.get_headers(provider_config)
+    local headers = provider_config.headers_function(provider_config)
     headers["Content-Type"] = "application/json"
 
     local body = {
@@ -58,5 +52,7 @@ M.make_request = function()
         end,
     })
 end
+
+M.init = function() end
 
 return M

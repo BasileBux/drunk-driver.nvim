@@ -1,7 +1,31 @@
 local M = {}
 
+local openai_compatible_get_headers = function(provider_config)
+    return {
+        Authorization = "Bearer " .. os.getenv(provider_config.api_key_name),
+    }
+end
+
+local anthropic_get_headers = function(provider_config)
+    return {
+        ["x-api-key"] = os.getenv(provider_config.api_key_name),
+        ["anthropic-version"] = "2023-06-01",
+    }
+end
+
+local copilot_get_headers = function(provider_config)
+    local version = vim.version()
+    return {
+        Authorization = "Bearer " .. provider_config.token,
+        ["Content-Type"] = "application/json",
+        ["Copilot-Integration-Id"] = "vscode-chat",
+        ["Editor-Version"] = "Neovim/" .. version.major .. "." .. version.minor .. "." .. version.patch,
+    }
+end
+
 M.providers = {
     moonshot = {
+        name = "moonshot",
         api_key_name = "MOONSHOT_API_KEY",
         url = "https://api.moonshot.ai",
         chat_url = "/v1/chat/completions",
@@ -16,8 +40,10 @@ M.providers = {
             enabled = true,
             budget = 2000,
         },
+        headers_function = openai_compatible_get_headers
     },
     openai = {
+        name = "openai",
         api_key_name = "OPENAI_API_KEY",
         url = "https://api.openai.com",
         chat_url = "/v1/responses",
@@ -33,8 +59,10 @@ M.providers = {
             enabled = true,
             budget = 2000,
         },
+        headers_function = openai_compatible_get_headers
     },
     anthropic = {
+        name = "anthropic",
         api_key_name = "ANTHROPIC_API_KEY",
         url = "https://api.anthropic.com",
         chat_url = "/v1/messages",
@@ -49,11 +77,13 @@ M.providers = {
             enabled = true,
             budget = 2000,
         },
+        headers_function = anthropic_get_headers
     },
     copilot = {
-        api_key_name = "COPILOT_API_KEY", -- WARNING: auth might be more complex than just an API
+        name = "copilot",
+        api_key_name = "", -- This is not used
         url = "https://api.githubcopilot.com",
-        chat_url = "chat/completions",
+        chat_url = "/chat/completions",
         models_endpoint = "/models",
         model = "claude-sonnet-4",
         roles = {
@@ -65,6 +95,7 @@ M.providers = {
             enabled = false,
             budget = 2000,
         },
+        headers_function = copilot_get_headers
     },
 }
 
@@ -82,8 +113,8 @@ M.log_file = io.open(vim.fn.stdpath("log") .. "/drunk-driver.log", "a")
 
 M.system_prompt = "You are an AI assistant in neovim called Drunk Driver."
 
-M.current_provider = "moonshot"
--- M.current_provider = "openai"
+-- M.current_provider = "moonshot"
+M.current_provider = "copilot"
 
 M.save_directory_name = ".drunk-driver"
 

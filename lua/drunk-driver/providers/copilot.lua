@@ -1,20 +1,16 @@
 local config = require("drunk-driver.config")
+local openai_compatible = require("drunk-driver.providers.openai-compatible")
 
 M = {}
 
-M.get_headers = function(provider_config)
-    local version = vim.version()
-    return {
-        Authorization = "Bearer " .. os.getenv(provider_config.api_key_name),
-        ["Content-Type"] = "application/json",
-        ["Copilot-Integration-Id"] = "vscode-chat",
-        ["Editor-Version"] = "Neovim/" .. version.major .. "." .. version.minor .. "." .. version.patch,
-    }
+M.make_request = function()
+    local provider_config = config.providers.copilot
+    openai_compatible.make_request(provider_config)
 end
 
 -- Reference: https://github.com/olimorris/codecompanion.nvim/blob/1ac1adb7f72798621cc9931ddf0a341ab486d7d8/lua/codecompanion/adapters/http/copilot/token.lua
 
--- Copied from: https://github.com/olimorris/codecompanion.nvim/blob/1ac1adb7f72798621cc9931ddf0a341ab486d7d8/lua/codecompanion/adapters/http/copilot/token.lua#L51-L65
+-- Function fully copied from: https://github.com/olimorris/codecompanion.nvim/blob/1ac1adb7f72798621cc9931ddf0a341ab486d7d8/lua/codecompanion/adapters/http/copilot/token.lua#L51-L65
 local get_config_path = function()
     local path = vim.fs.normalize("$XDG_CONFIG_HOME")
 
@@ -100,16 +96,42 @@ local get_copilot_token = function()
         return nil
     end
 
-    return decoded.token
+    return decoded
 end
 
-M.test = function()
-    local token = get_copilot_token()
-    if token then
-        print("Copilot token retrieved successfully: " .. token)
+local token_save_path = vim.fn.stdpath("data") .. "/dd_copilot_token.json"
+
+M.validate_token = function()
+    -- verify if token exists and is valid and if not regenerate one
+    local token_file = io.open(token_save_path, "r")
+    if token_file then
+        local token_data = token_file:read("*a")
+        token_file:close()
+        if token_data and #token_data > 0 then
+            local decoded = vim.json.decode(token_data)
+            local buffer = 600 -- 10 minutes buffer
+            if os.time() < (decoded.expires_at - buffer) then
+                config.providers.copilot.token = decoded.token
+                return
+            end
+        end
+    end
+
+    local token_data = get_copilot_token()
+    if token_data then
+        local token_file = io.open(token_save_path, "w")
+        if token_file then
+            token_file:write(vim.json.encode(token_data))
+            token_file:close()
+        end
+        config.providers.copilot.token = token_data.token
     else
         print("Failed to retrieve Copilot token")
     end
+end
+
+M.init = function()
+    M.validate_token()
 end
 
 return M

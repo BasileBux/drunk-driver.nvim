@@ -75,6 +75,7 @@ M.change_model = function()
     M.select_provider(function(provider_name)
         M.select_model(provider_name, function(model_name)
             config.current_provider = provider_name
+            providers[provider_name].init()
             config.providers[provider_name].model = model_name
             vim.notify("Provider set to " .. provider_name .. " with model " .. model_name)
         end)
