@@ -46,6 +46,9 @@ M.create_buffer = function()
     return buf
 end
 
+-- NOTE: keep this function but don't add directly to conversation
+-- add to some new tool call list instead and reference the index of
+-- the assistant message which did the tool calls
 M.add_tool_call = function(tool_call)
     local args = vim.json.decode(tool_call["function"].arguments)
     table.insert(M.conversation, {
@@ -75,6 +78,7 @@ M.add_assistant_message = function(content)
     })
 end
 
+-- NOTE: this has to go. 
 M.add_assistant_message_with_tools = function(content, tool_calls)
     local provider_config = config.get_current_provider_config()
     table.insert(M.conversation, {

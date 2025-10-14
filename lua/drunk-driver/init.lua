@@ -23,11 +23,7 @@ M.send_request = function()
         provider.validate_token()
     end
 
-    local tool_call = true
-    while tool_call do
-        tool_call = provider.make_request() or false
-        config.log_file:write("Tool call: " .. tostring(tool_call) .. "\n")
-    end
+     provider.make_request()
 end
 
 M.hover_thinking = thinking.open

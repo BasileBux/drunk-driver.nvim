@@ -122,7 +122,7 @@ M.log_file = io.open(vim.fn.stdpath("log") .. "/drunk-driver.log", "a")
 M.linux_distribution = ""
 M.system_prompt = ""
 
-M.current_provider = "moonshot"
+M.current_provider = "copilot"
 
 M.save_directory_name = ".drunk-driver"
 

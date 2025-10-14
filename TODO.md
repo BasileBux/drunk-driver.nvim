@@ -23,3 +23,4 @@
 - [ ] Save specific model who generated the answer
 - [ ] Add LSP support
 - [ ] Add more tool calling
+- [ ] Add parallel tool call execution with proper rendering
