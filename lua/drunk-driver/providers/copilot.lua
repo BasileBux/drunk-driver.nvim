@@ -1,5 +1,5 @@
 local config = require("drunk-driver.config")
-local openai_compatible = require("drunk-driver.providers.openai-compatible")
+local openai_compatible = require("drunk-driver.providers.openai_compatible")
 
 M = {}
 
@@ -7,6 +7,35 @@ M.make_request = function()
     local provider_config = config.providers.copilot
     openai_compatible.make_request(provider_config)
 end
+
+-- Tool calls: old openai compatible way and can only perform one tool call at a time
+-- "functions": [
+--     {
+--         "name": "get_weather",
+--         "description": "Get weather for a city",
+--         "parameters": {
+--             "type": "object",
+--             "properties": {
+--                 "city": {"type": "string"}
+--             },
+--             "required": ["city"]
+--           }
+--     }
+-- ],
+-- Response: So basically creates the tool call and streams the arguments in a valid json string
+-- data: {"choices":[{"index":0,"delta":{"content":null,"role":"assistant","function_call":{"arguments":"","name":"get_weather"}}}],"created":1760426016,"id":"chatcmpl-CQTVwI8fVyPBdujAF4qrwF4wNlkge","model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_efad92c60b"}
+-- data: {"choices":[{"index":0,"delta":{"content":null,"function_call":{"arguments":"{\""}}}],"created":1760426016,"id":"chatcmpl-CQTVwI8fVyPBdujAF4qrwF4wNlkge","model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_efad92c60b"}
+-- data: {"choices":[{"index":0,"delta":{"content":null,"function_call":{"arguments":"city"}}}],"created":1760426016,"id":"chatcmpl-CQTVwI8fVyPBdujAF4qrwF4wNlkge","model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_efad92c60b"}
+-- data: {"choices":[{"index":0,"delta":{"content":null,"function_call":{"arguments":"\":\""}}}],"created":1760426016,"id":"chatcmpl-CQTVwI8fVyPBdujAF4qrwF4wNlkge","model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_efad92c60b"}
+-- data: {"choices":[{"index":0,"delta":{"content":null,"function_call":{"arguments":"Paris"}}}],"created":1760426016,"id":"chatcmpl-CQTVwI8fVyPBdujAF4qrwF4wNlkge","model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_efad92c60b"}
+-- data: {"choices":[{"index":0,"delta":{"content":null,"function_call":{"arguments":"\"}"}}}],"created":1760426016,"id":"chatcmpl-CQTVwI8fVyPBdujAF4qrwF4wNlkge","model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_efad92c60b"}
+-- Add this to the conversation messages: It seems the assistant doesn't answer anything else than the tool call
+-- "messages": [
+--   {"role": "system", "content": "You are a helpful assistant."},
+--   {"role": "user", "content": "What's the weather in Paris?"},
+--   {"role": "assistant", "function_call": {"name": "get_weather", "arguments": "{\"city\":\"Paris\"}"}},
+--   {"role": "function", "name": "get_weather", "content": "{\"temperature\": 15, \"condition\": \"cloudy\"}"}
+-- ],
 
 -- Cpilot api isn't documented anywhere and the best ways to learn is to look at
 -- other implementations. I got all my knowledge and code from the following file:

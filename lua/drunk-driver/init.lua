@@ -23,7 +23,11 @@ M.send_request = function()
         provider.validate_token()
     end
 
-    provider.make_request()
+    local tool_call = true
+    while tool_call do
+        tool_call = provider.make_request() or false
+        config.log_file:write("Tool call: " .. tostring(tool_call) .. "\n")
+    end
 end
 
 M.hover_thinking = thinking.open
@@ -47,7 +51,7 @@ local handlers = {
     save = M.save_conversation,
     load = M.load_conversation,
     select_model = providers.change_model,
-    test = providers.get_provider("copilot").init
+    test = providers.get_provider("copilot").init,
 }
 
 M.dd = function(opts)

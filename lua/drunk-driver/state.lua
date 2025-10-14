@@ -1,5 +1,6 @@
 local config = require("drunk-driver.config")
 local buffer = require("drunk-driver.buffer")
+local tools = require("drunk-driver.tools")
 
 local M = {}
 
@@ -45,6 +46,19 @@ M.create_buffer = function()
     return buf
 end
 
+M.add_tool_call = function(tool_call)
+    local args = vim.json.decode(tool_call["function"].arguments)
+    table.insert(M.conversation, {
+        role = "tool",
+        tool_call_id = tool_call.id,
+        name = tool_call["function"].name,
+        content = vim.json.encode({
+            args = args,
+            result = tools[tool_call["function"].name].run(tool_call),
+        }),
+    })
+end
+
 M.add_user_message = function(content)
     local provider_config = config.get_current_provider_config()
     table.insert(M.conversation, {
@@ -58,6 +72,15 @@ M.add_assistant_message = function(content)
     table.insert(M.conversation, {
         role = provider_config.roles.llm,
         content = content,
+    })
+end
+
+M.add_assistant_message_with_tools = function(content, tool_calls)
+    local provider_config = config.get_current_provider_config()
+    table.insert(M.conversation, {
+        role = provider_config.roles.llm,
+        content = content,
+        tool_calls = tool_calls,
     })
 end
 

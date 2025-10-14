@@ -1,5 +1,6 @@
 Curl = require("plenary.curl")
 local config = require("drunk-driver.config")
+local state = require("drunk-driver.state")
 
 local M = {}
 
@@ -43,10 +44,10 @@ end
 
 M.list_models = function(provider_name)
     local provider_config = config.providers[provider_name]
-    local headers = provider_config.headers_function(provider_config)
-    if headers == nil then
-        return {}
+    if provider_name == provider_config.name then
+        providers.copilot.validate_token()
     end
+    local headers = provider_config.headers_function(provider_config)
 
     local models = Curl.get(provider_config.url .. provider_config.models_endpoint, {
         headers = headers,

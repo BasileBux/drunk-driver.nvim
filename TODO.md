@@ -9,9 +9,14 @@
 - [x] Add chat saving / loading
 - [x] Add provider and model selection
 - [x] Add copilot provider
-- [ ] Add better error reporting to the user without crashing or being anoying
-- [ ] Write system prompt
+- [x] Write system prompt
+- [x] Add thinking model support for copilot and openai providers (maybe lock capabilities)
 - [ ] Add simple tool calling (ls, tree, etc...)
+    - [x] Build tools on model choice and not on request
+    - [ ] Do tool calls on all providers (NEEDS BIG REFACTOR)
+    - [ ] Manage tool call rendering
+    - [ ] Manage saving conversations with tool calls
+- [ ] Add better error reporting to the user without crashing or being anoying
 - [ ] Add possiblility to provide files to the model
 - [ ] Add file reading tool calling
 - [ ] Add a way to reset the thistory list and reparse the full buffer

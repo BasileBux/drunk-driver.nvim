@@ -1,3 +1,5 @@
+local system_prompt = require("drunk-driver.system_prompt")
+
 local M = {}
 
 local openai_compatible_get_headers = function(provider_config)
@@ -15,10 +17,6 @@ end
 
 local copilot_get_headers = function(provider_config)
     local version = vim.version()
-    if not provider_config.token then
-        print("error: copilot token not found. Try launching a new drunk-driver session")
-        return nil
-    end
     return {
         Authorization = "Bearer " .. provider_config.token,
         ["Content-Type"] = "application/json",
@@ -42,9 +40,10 @@ M.providers = {
         max_tokens = 10000,
         thinking = {
             enabled = true,
-            budget = 2000,
+            budget = 2000, -- NOTE: this doesn't work
         },
-        headers_function = openai_compatible_get_headers
+        headers_function = openai_compatible_get_headers,
+        tools_enabled = true,
     },
     openai = {
         name = "openai",
@@ -61,9 +60,10 @@ M.providers = {
         max_tokens = 10000,
         thinking = {
             enabled = true,
-            budget = 2000,
+            budget = 2000, -- NOTE: this doesn't work
         },
-        headers_function = openai_compatible_get_headers
+        headers_function = openai_compatible_get_headers,
+        tools_enabled = false,
     },
     anthropic = {
         name = "anthropic",
@@ -81,7 +81,8 @@ M.providers = {
             enabled = true,
             budget = 2000,
         },
-        headers_function = anthropic_get_headers
+        headers_function = anthropic_get_headers,
+        tools_enabled = false,
     },
     copilot = {
         name = "copilot",
@@ -95,11 +96,12 @@ M.providers = {
             user = "user",
         },
         max_tokens = 10000,
-        thinking = { -- WARNING: not sure to even have the choice
-            enabled = false,
-            budget = 2000,
+        thinking = { -- WARNING: not sure this works
+            enabled = true,
+            budget = 2000, -- NOTE: this doesn't work
         },
-        headers_function = copilot_get_headers
+        headers_function = copilot_get_headers,
+        tools_enabled = false,
     },
 }
 
@@ -113,12 +115,14 @@ M.thinking = {
     marker_regex = "> %[Thinking%]",
 }
 
+M.tools = {}
+
 M.log_file = io.open(vim.fn.stdpath("log") .. "/drunk-driver.log", "a")
 
-M.system_prompt = "You are an AI assistant in neovim called Drunk Driver."
+M.linux_distribution = ""
+M.system_prompt = ""
 
--- M.current_provider = "moonshot"
-M.current_provider = "copilot"
+M.current_provider = "moonshot"
 
 M.save_directory_name = ".drunk-driver"
 
@@ -129,9 +133,13 @@ M.setup = function(opts)
     if opts.system_prompt then
         M.system_prompt = opts.system_prompt
     end
+    if opts.linux_distribution then
+        M.linux_distribution = opts.linux_distribution
+    end
     if opts.providers then
         M.providers = vim.tbl_deep_extend("force", M.providers, opts.providers)
     end
+    M.system_prompt = system_prompt.default(M.linux_distribution)
 end
 
 M.get_current_provider_config = function()

@@ -74,7 +74,7 @@ M.make_request = function()
                                     state.set_state(state.state_enum.RESPONSE)
                                     buffer.print_stream_scheduled("\n", state.buffer)
                                 end
-                                local text = decoded.delta.text
+                                local text = decoded.delta.text or ""
                                 answer = answer .. text
                                 buffer.print_stream_scheduled(text, state.buffer)
                             end

@@ -16,6 +16,11 @@ M.make_request = function()
         stream = true,
         max_output_tokens = provider_config.max_tokens,
     }
+    if provider_config.thinking.enabled then
+        body.reasoning = {
+            effort = "low",
+        }
+    end
 
     local answer = ""
 
