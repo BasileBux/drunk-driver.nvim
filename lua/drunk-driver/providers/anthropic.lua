@@ -6,36 +6,36 @@ local common = require("drunk-driver.providers.common")
 
 local M = {}
 
-M.reasoning_function = function(decoded, answer, thinking_index)
-    if decoded.delta.thinking then
+M.reasoning_function = function(opts)
+    if opts.decoded.delta.thinking then
         if state.state ~= state.state_enum.THINKING then
             state.set_state(state.state_enum.THINKING)
-            thinking_index = thinking.new()
-            answer = answer .. config.thinking.marker .. " " .. thinking_index .. "\n\n"
+            opts.thinking_index = thinking.new()
+            opts.answer = opts.answer .. config.thinking.marker .. " " .. opts.thinking_index .. "\n\n"
         end
-        local text = decoded.delta.thinking
-        state.thinking.data[thinking_index] = state.thinking.data[thinking_index] .. text
-        if state.thinking.current_thought == thinking_index then
+        local text = opts.decoded.delta.thinking
+        state.thinking.data[opts.thinking_index] = state.thinking.data[opts.thinking_index] .. text
+        if state.thinking.current_thought == opts.thinking_index then
             buffer.print_stream_scheduled(text, state.thinking.buffer)
         end
         return true
     end
     return false
 end
-M.content_function = function(decoded, answer)
-    if decoded.delta.text then
+M.content_function = function(opts)
+    if opts.decoded.delta.text then
         if state.state ~= state.state_enum.RESPONSE then
             state.set_state(state.state_enum.RESPONSE)
             buffer.print_stream_scheduled("\n", state.buffer)
         end
-        local text = decoded.delta.text or ""
-        answer = answer .. text
+        local text = opts.decoded.delta.text or ""
+        opts.answer = opts.answer .. text
         buffer.print_stream_scheduled(text, state.buffer)
         return true
     end
     return false
 end
-M.tool_call_function = function(_, _) -- NOTE: not implemented
+M.tool_call_function = function(_) -- NOTE: not implemented
     return false
 end
 M.valid_block_condition = function(decoded)

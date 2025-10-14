@@ -14,7 +14,14 @@ M.state_enum = {
 
 M.buffer = 0
 M.state = M.state_enum.USER_INPUT
+
+-- Displayed and sent to the LLM. Also has tool calls
 M.conversation = {}
+
+-- Only contains messages and no tool calls
+M.messages = {}
+
+M.tool_calls = {}
 
 M.thinking = {
     buffer = nil,
@@ -30,11 +37,17 @@ M.init = function()
             content = config.system_prompt,
         },
     }
+    M.messages = {
+        {
+            role = "system",
+            content = config.system_prompt,
+        },
+    }
 end
 
 M.create_buffer = function()
     local buf = vim.api.nvim_create_buf(false, true)
-    M.set_buffer(buf)
+    M.buffer = buf
     M.init()
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     vim.api.nvim_set_option_value("filetype", "drunkdriver", { buf = buf })
@@ -46,25 +59,27 @@ M.create_buffer = function()
     return buf
 end
 
--- NOTE: keep this function but don't add directly to conversation
--- add to some new tool call list instead and reference the index of
--- the assistant message which did the tool calls
-M.add_tool_call = function(tool_call)
+M.add_tool_call = function(tool_call, index)
     local args = vim.json.decode(tool_call["function"].arguments)
-    table.insert(M.conversation, {
+    local call = {
         role = "tool",
         tool_call_id = tool_call.id,
         name = tool_call["function"].name,
-        content = vim.json.encode({
-            args = args,
-            result = tools[tool_call["function"].name].run(tool_call),
-        }),
-    })
+        args = args,
+        result = tools[tool_call["function"].name].run(tool_call),
+        assistant_message_index = index,
+    }
+    table.insert(M.tool_calls, call)
+    return call
 end
 
 M.add_user_message = function(content)
     local provider_config = config.get_current_provider_config()
     table.insert(M.conversation, {
+        role = provider_config.roles.user,
+        content = content,
+    })
+    table.insert(M.messages, {
         role = provider_config.roles.user,
         content = content,
     })
@@ -76,15 +91,9 @@ M.add_assistant_message = function(content)
         role = provider_config.roles.llm,
         content = content,
     })
-end
-
--- NOTE: this has to go. 
-M.add_assistant_message_with_tools = function(content, tool_calls)
-    local provider_config = config.get_current_provider_config()
-    table.insert(M.conversation, {
+    table.insert(M.messages, {
         role = provider_config.roles.llm,
         content = content,
-        tool_calls = tool_calls,
     })
 end
 
@@ -92,10 +101,8 @@ M.set_state = function(new_state)
     M.state = new_state
 end
 
-M.set_buffer = function(buffer)
-    M.buffer = buffer
-end
-
+-- WARNING: all functions below might be broken and need to be fixed to support
+-- the latest refactor
 M.save_conversation = function()
     vim.ui.input({ prompt = "Enter a name for the conversation: " }, function(input)
         if not input or input == "" then

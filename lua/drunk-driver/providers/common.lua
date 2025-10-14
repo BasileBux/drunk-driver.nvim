@@ -8,23 +8,22 @@ local M = {}
 M.make_request = function(
     provider_config,
     body,
-    tool_build_function,
+    request_function,
     reasoning_handler,
     content_handler,
     tool_call_handler,
     end_marker,
-    valid_block_condition
+    valid_block_condition,
+    add_tool_call_function
 )
     local headers = provider_config.headers_function(provider_config)
     headers["Content-Type"] = "application/json"
 
-    if provider_config.tools_enabled then
-        body.tools = config.tools
-    end
-
-    local answer = ""
-    local thinking_index = 0
-    local tool_calls = {}
+    local opts = {
+        answer = "",
+        thinking_index = 0,
+        tool_calls = {},
+    }
     config.log_file:write("Request body:\n" .. vim.json.encode(body) .. "\n\n")
 
     Curl.post(provider_config.url .. provider_config.chat_url, {
@@ -32,39 +31,43 @@ M.make_request = function(
         body = vim.json.encode(body),
         stream = function(_, chunk)
             if chunk then
-                config.log_file:write(chunk .. "\n\n")
                 for line in chunk:gmatch("[^\n\r]+") do
                     -- End condition
                     if line == end_marker then
-                        if not tool_calls[1] then
-                            state.add_assistant_message(answer)
+                        if not opts.tool_calls[1] then
+                            state.add_assistant_message(opts.answer)
                             state.set_state(state.state_enum.USER_INPUT)
                             buffer.print_stream_scheduled("\n", state.buffer)
                             buffer.add_user_header_scheduled(state.buffer)
                             return
                         end
-                        -- Store tool calls and make a new request
-                        -- NOTE: needs rework for better compatibility like better formatting
-                        state.add_assistant_message_with_tools(answer, tool_calls)
-                        for _, tool_call in ipairs(tool_calls) do
-                            state.add_tool_call(tool_call)
+                        table.insert(state.messages, {
+                            role = provider_config.roles.llm,
+                            content = opts.answer,
+                        })
+                        local solved_tool_calls = {}
+                        for _, tool_call in ipairs(opts.tool_calls) do
+                            table.insert(solved_tool_calls, state.add_tool_call(tool_call, #state.messages + 1))
                         end
+                        add_tool_call_function(opts.answer, opts.tool_calls, solved_tool_calls)
+
                         vim.schedule(function()
-                            M.make_request(provider_config, tool_build_function)
+                            request_function()
                         end)
                         return
                     end
                     local data = line:gsub("^data: ", "")
                     local ok, decoded = pcall(vim.json.decode, data)
+                    opts.decoded = decoded
 
                     if ok and valid_block_condition(decoded) then
-                        if reasoning_handler(decoded, answer, { value = thinking_index }) then
+                        if reasoning_handler(opts) then
                             return
                         end
-                        if content_handler(decoded, answer) then
+                        if content_handler(opts) then
                             return
                         end
-                        if tool_call_handler(decoded, tool_calls) then
+                        if tool_call_handler(opts) then
                             return
                         end
                     end

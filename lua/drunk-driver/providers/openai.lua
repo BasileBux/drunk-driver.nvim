@@ -1,4 +1,3 @@
-local Curl = require("plenary.curl")
 local config = require("drunk-driver.config")
 local state = require("drunk-driver.state")
 local buffer = require("drunk-driver.buffer")
@@ -6,22 +5,22 @@ local common = require("drunk-driver.providers.common")
 
 local M = {}
 
-M.reasoning_function = function(_, _, _)
+M.reasoning_function = function(_)
     return false
 end
 
-M.content_function = function(decoded, answer)
-    if decoded.delta then
+M.content_function = function(opts)
+    if opts.decoded.delta then
         if state.state ~= state.state_enum.RESPONSE then
             state.set_state(state.state_enum.RESPONSE)
             buffer.print_stream_scheduled("\n", state.buffer)
         end
-        answer = answer .. decoded.delta
-        buffer.print_stream_scheduled(decoded.delta, state.buffer)
+        opts.answer = opts.answer .. opts.decoded.delta
+        buffer.print_stream_scheduled(opts.decoded.delta, state.buffer)
     end
 end
 
-M.tool_call_function = function(_, _) -- NOTE: not implemented
+M.tool_call_function = function(_) -- NOTE: not implemented
     return false
 end
 

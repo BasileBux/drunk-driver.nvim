@@ -1,6 +1,5 @@
 Curl = require("plenary.curl")
 local config = require("drunk-driver.config")
-local state = require("drunk-driver.state")
 
 local M = {}
 
@@ -31,6 +30,7 @@ M.list_providers = function()
     return provider_names
 end
 
+-- WARNING: the functions below need a rework to include tools and rebuild state.conversation
 M.select_provider = function(callback)
     local provider_names = M.list_providers()
     vim.ui.select(provider_names, {

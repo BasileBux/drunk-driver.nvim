@@ -25,6 +25,26 @@ M.build_tools = function()
     return unserialized_tools
 end
 
+M.add_tool_calls = function(content, raw_tool_calls, solved_tool_calls)
+    local provider_config = config.providers.moonshot
+    table.insert(state.conversation, {
+        role = provider_config.roles.llm,
+        content = content,
+        tool_calls = raw_tool_calls,
+    })
+    for _, call in ipairs(solved_tool_calls) do
+        table.insert(state.conversation, {
+            role = "tool",
+            tool_call_id = call.tool_call_id,
+            name = call.name,
+            content = vim.json.encode({
+                args = call.args,
+                result = call.result,
+            }),
+        })
+    end
+end
+
 M.make_request = function()
     local provider_config = config.providers.moonshot
     local body = {
@@ -40,12 +60,13 @@ M.make_request = function()
     common.make_request(
         provider_config,
         body,
-        M.build_tools,
+        M.make_request,
         openai_compatible.reasoning_function,
         openai_compatible.content_function,
         openai_compatible.tool_call_function,
         openai_compatible.end_marker,
-        openai_compatible.valid_block_condition
+        openai_compatible.valid_block_condition,
+        M.add_tool_calls
     )
 end
 

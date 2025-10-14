@@ -14,9 +14,12 @@
 - [ ] Add simple tool calling (ls, tree, etc...)
     - [x] Build tools on model choice and not on request
     - [ ] Do tool calls on all providers (NEEDS BIG REFACTOR)
+    - [ ] Handle provider switching supporting tool calls
+    - [ ] Handle saving conversation keeping tool calls
     - [ ] Manage tool call rendering
     - [ ] Manage saving conversations with tool calls
 - [ ] Add better error reporting to the user without crashing or being anoying
+    - [ ] Handle rate limits
 - [ ] Add possiblility to provide files to the model
 - [ ] Add file reading tool calling
 - [ ] Add a way to reset the thistory list and reparse the full buffer
