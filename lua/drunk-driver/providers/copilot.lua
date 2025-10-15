@@ -25,7 +25,7 @@ M.make_request = function()
         openai_compatible.content_function,
         openai_compatible.tool_call_function,
         openai_compatible.end_marker,
-        openai_compatible.valid_block_condition
+        function() end
     )
 end
 

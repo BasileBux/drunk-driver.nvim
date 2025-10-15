@@ -82,10 +82,6 @@ M.add_tool_calls = function(_, raw_tool_calls, solved_tool_calls)
     end
 end
 
-M.valid_block_condition = function(_)
-    return true
-end
-
 M.make_request = function()
     local provider_config = config.providers.openai
     local body = {
@@ -108,7 +104,6 @@ M.make_request = function()
         M.content_function,
         M.tool_call_function,
         "event: response.completed",
-        M.valid_block_condition,
         M.add_tool_calls
     )
 end

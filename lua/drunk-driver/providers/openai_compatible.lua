@@ -8,7 +8,7 @@ local M = {}
 M.end_marker = "data: [DONE]"
 
 M.reasoning_function = function(opts)
-    if opts.decoded.choices[1].delta.reasoning_content then
+    if opts.decoded.choices and opts.decoded.choices[1].delta.reasoning_content then
         if state.state ~= state.state_enum.THINKING then
             state.set_state(state.state_enum.THINKING)
             opts.thinking_index = thinking.new()
@@ -25,7 +25,7 @@ M.reasoning_function = function(opts)
 end
 
 M.content_function = function(opts)
-    if opts.decoded.choices[1].delta.content then
+    if opts.decoded.choices and opts.decoded.choices[1].delta.content then
         if state.state ~= state.state_enum.RESPONSE then
             state.set_state(state.state_enum.RESPONSE)
             buffer.print_stream_scheduled("\n", state.buffer)
@@ -42,7 +42,7 @@ M.content_function = function(opts)
 end
 
 M.tool_call_function = function(opts)
-    if opts.decoded.choices[1].delta.tool_calls then
+    if opts.decoded.choices and opts.decoded.choices[1].delta.tool_calls then
         local tool_call_delta = opts.decoded.choices[1].delta.tool_calls[1]
         local tool_index = tool_call_delta.index + 1 -- Transform to 1 indexed
         if not opts.tool_calls[tool_index] then
@@ -61,10 +61,6 @@ M.tool_call_function = function(opts)
         return true
     end
     return false
-end
-
-M.valid_block_condition = function(decoded)
-    return decoded.choices
 end
 
 return M

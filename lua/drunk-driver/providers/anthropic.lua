@@ -74,9 +74,6 @@ M.tool_call_function = function(opts)
     end
     return false
 end
-M.valid_block_condition = function(decoded)
-    return decoded
-end
 
 M.add_tool_calls = function(content, raw_tool_calls, solved_tool_calls)
     local provider_config = config.providers.anthropic
@@ -147,7 +144,6 @@ M.make_request = function()
         M.content_function,
         M.tool_call_function,
         end_marker,
-        M.valid_block_condition,
         M.add_tool_calls
     )
 end

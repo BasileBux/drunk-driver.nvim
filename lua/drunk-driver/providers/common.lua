@@ -13,7 +13,6 @@ M.make_request = function(
     content_handler,
     tool_call_handler,
     end_marker,
-    valid_block_condition,
     add_tool_call_function
 )
     local headers = provider_config.headers_function(provider_config)
@@ -62,7 +61,7 @@ M.make_request = function(
                     local ok, decoded = pcall(vim.json.decode, data)
                     opts.decoded = decoded
 
-                    if ok and valid_block_condition(decoded) then
+                    if ok then
                         if reasoning_handler(opts) then
                             return
                         end
