@@ -63,7 +63,7 @@ M.providers = {
             budget = 2000, -- NOTE: this doesn't work
         },
         headers_function = openai_compatible_get_headers,
-        tools_enabled = false,
+        tools_enabled = true,
     },
     anthropic = {
         name = "anthropic",
@@ -82,7 +82,7 @@ M.providers = {
             budget = 2000,
         },
         headers_function = anthropic_get_headers,
-        tools_enabled = false,
+        tools_enabled = true,
     },
     copilot = {
         name = "copilot",
@@ -122,7 +122,7 @@ M.log_file = io.open(vim.fn.stdpath("log") .. "/drunk-driver.log", "a")
 M.linux_distribution = ""
 M.system_prompt = ""
 
-M.current_provider = "moonshot"
+M.current_provider = "anthropic"
 
 M.save_directory_name = ".drunk-driver"
 
@@ -132,6 +132,8 @@ M.setup = function(opts)
     end
     if opts.system_prompt then
         M.system_prompt = opts.system_prompt
+    else
+        M.system_prompt = system_prompt.default(M.linux_distribution)
     end
     if opts.linux_distribution then
         M.linux_distribution = opts.linux_distribution
@@ -139,7 +141,6 @@ M.setup = function(opts)
     if opts.providers then
         M.providers = vim.tbl_deep_extend("force", M.providers, opts.providers)
     end
-    M.system_prompt = system_prompt.default(M.linux_distribution)
 end
 
 M.get_current_provider_config = function()

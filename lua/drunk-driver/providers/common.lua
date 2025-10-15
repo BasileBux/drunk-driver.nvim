@@ -23,6 +23,7 @@ M.make_request = function(
         answer = "",
         thinking_index = 0,
         tool_calls = {},
+        tool_call_index = 0,
     }
     config.log_file:write("Request body:\n" .. vim.json.encode(body) .. "\n\n")
 
@@ -31,6 +32,7 @@ M.make_request = function(
         body = vim.json.encode(body),
         stream = function(_, chunk)
             if chunk then
+                config.log_file:write(chunk .. "\n\n")
                 for line in chunk:gmatch("[^\n\r]+") do
                     -- End condition
                     if line == end_marker then

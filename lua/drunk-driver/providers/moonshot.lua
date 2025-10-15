@@ -14,11 +14,7 @@ M.build_tools = function()
             ["function"] = {
                 name = tool.name,
                 description = tool.description,
-                parameters = {
-                    type = "object",
-                    required = tool.parameters.required,
-                    properties = tool.parameters.properties,
-                },
+                parameters = tool.parameters,
             },
         })
     end

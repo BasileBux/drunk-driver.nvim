@@ -51,12 +51,12 @@ M.tool_call_function = function(opts)
                 type = "function",
                 ["function"] = {
                     name = tool_call_delta["function"].name,
-                    arguments = tool_call_delta["function"].arguments or "",
+                    arguments = tool_call_delta["function"].arguments,
                 },
             })
         else
             opts.tool_calls[tool_index]["function"].arguments = opts.tool_calls[tool_index]["function"].arguments
-                .. (tool_call_delta["function"].arguments or "")
+                .. (tool_call_delta["function"].arguments)
         end
         return true
     end

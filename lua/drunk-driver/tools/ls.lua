@@ -6,6 +6,7 @@ M.description = "List files and directories\n\n"
     .. "When you need to know which files exist where, use this command. It works exactly like in linux."
 
 M.parameters = {
+    type = "object",
     required = {},
     properties = {
         path = {

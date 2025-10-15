@@ -1,6 +1,6 @@
-local config = require("drunk-driver.config")
 local buffer = require("drunk-driver.buffer")
 local tools = require("drunk-driver.tools")
+local config = require("drunk-driver.config")
 
 local M = {}
 
@@ -60,6 +60,9 @@ M.create_buffer = function()
 end
 
 M.add_tool_call = function(tool_call, index)
+    if tool_call["function"].arguments == "" then
+        tool_call["function"].arguments = "{}"
+    end
     local args = vim.json.decode(tool_call["function"].arguments)
     local call = {
         role = "tool",

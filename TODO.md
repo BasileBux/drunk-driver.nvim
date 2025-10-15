@@ -18,6 +18,7 @@
     - [ ] Handle saving conversation keeping tool calls
     - [ ] Manage tool call rendering
     - [ ] Manage saving conversations with tool calls
+- [ ] Write docs and type annotations
 - [ ] Add better error reporting to the user without crashing or being anoying
     - [ ] Handle rate limits
 - [ ] Add possiblility to provide files to the model
